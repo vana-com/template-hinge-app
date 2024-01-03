@@ -39,5 +39,5 @@ function AuthPage() {
     sendCodeToServer();
   }, [code, codeVerifier]);
 
-  return <div>You are logged in.</div>;
+  return null;
 }
