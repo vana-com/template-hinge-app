@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const tokenRequestBody = new URLSearchParams({
     grant_type: "authorization_code",
     client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
-    redirect_uri: "http://localhost:3000/auth",
+    redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/auth`,
     code_verifier: codeVerifier,
     code,
   });
