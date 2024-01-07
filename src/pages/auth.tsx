@@ -8,9 +8,14 @@ export default function auth() {
 
 function AuthPage() {
   const router = useRouter();
-  const { code, state } = router.query; // Extract 'code' and 'state' from URL
+  const { code, state, error } = router.query; // Extract 'code' and 'state' from URL
 
-  // Call this function in your component's useEffect or a relevant event handler
+  // If auth was cancelled, redirect to home
+  useEffect(() => {
+    if (error === "access_denied") {
+      router.push("/");
+    }
+  }, [state]);
 
   // Kickoff conversation
   useEffect(() => {
