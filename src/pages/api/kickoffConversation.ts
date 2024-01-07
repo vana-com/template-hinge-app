@@ -18,8 +18,8 @@ export default async function handler(req, res) {
     const accountId = decodedToken.sub;
     console.log(accessToken, accountId);
 
-    const ANNA = "088473d6-e972-426a-b2bc-f74e2a374dd1";
-    const CONNOR = "08aa7ae0-43e1-40f7-8f43-df84d0f11108"; // Does not work until character completes setup.
+    // const ANNA = "088473d6-e972-426a-b2bc-f74e2a374dd1";
+    // const CONNOR = "08aa7ae0-43e1-40f7-8f43-df84d0f11108"; // Does not work until character completes setup.
 
     const vanaResponse = await fetch(
       `https://development-gotchi-js-api.vana.com/api/v0/conversations`,
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          characterId: ANNA,
+          characterId: req.body.characterId,
         }),
       }
     );

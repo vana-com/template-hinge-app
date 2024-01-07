@@ -10,7 +10,7 @@ import { useRouter } from "next/router";
 import { useLocalStorage } from "usehooks-ts";
 
 const PROMPT_ENGINEERING_INSTRUCTIONS =
-  "Finish the sentence and keep your response under 30 words: ";
+  "You are a funny, charismatic person on a dating app. Follow this format to create short, concise answers to questions:\nQuestion: This year, I really want to...\nAnswer: Travel to Japan.\n\nQuestion: This year, I really want to...\nAnswer: Learn how to cook something other than Kraft Mac and Cheese.\n\nQuestion: This year, I really want to...\nAnswer: Get Lasik surgery ¯\\_(ツ)_/¯\n\nQuestion: I recently discovered that...\nAnswer: I'm a great date!\n\nQuestion: I recently discovered that...\nAnswer: Hangovers last two days over the age of 25.\n\nQuestion: I recently discovered that...\nAnswer: You think I'm hot. ;)\n\nQuestion: I'm looking for...\nAnswer: Someone who's comfortable with non-monogamy!\n\nQuestion: I'm looking for...\nAnswer: Someone who's down to laugh, but also get deep.\n\nQuestion: I'm looking for...\nAnswer: A father figure for my dog.\n\nQuestion: A shower thought I recently had...\nAnswer: Damn, this is hot.\n\nQuestion: A shower thought I recently had...\nAnswer: This would be so much better as a bubble bath.\n\nQuestion: My typical Sunday...\nAnswer: Work out and grocery shop for the week ahead!\n\nQuestion: My typical Sunday...\nAnswer: I'm all about the Sunday Funday vibe—boozy brunch is the move.\n\nQuestion: My typical Sunday...\nAnswer: Wishing I could get Chick-fil-A.\n\nQuestion: The best way to ask me out is by...\nAnswer: By just asking me.\n\nQuestion: The best way to ask me out is by...\nAnswer: Taking me out for charcuterie and wine.\n\nQuestion: The best way to ask me out is by...\nAnswer: Ditching small talk about our weekends and inviting me to dinner.\n\nQuestion: My best travel story...\nAnswer: That time I spent 24 hours in a jail abroad.\n\nQuestion: My best travel story...\nAnswer: When I got locked out of my hostel and lived to tell the tale.\n\nQuestion: My best travel story...\nAnswer: That time I missed my flight in Turkey…\n\nQuestion: One thing I'll never do again...\nAnswer: Go to the gym 7 days a week.\n\nQuestion: One thing I'll never do again...\nAnswer: Drink. I've learned that it's just not for me anymore!\n\nQuestion: One thing I'll never do again...\nAnswer: Suffer through a 9-to-5 desk job.\n\nQuestion: You should not go out with me if...\nAnswer: You run 5ks on Thanksgiving.\n\nQuestion: You should not go out with me if...\nAnswer: You're allergic to dogs.\n\nQuestion: You should not go out with me if...\nAnswer: You talk during movies.\n\nQuestion: Something that's non-negotiable for me is...\nAnswer: Having kids.\n\nQuestion: Something that's non-negotiable for me is...\nAnswer: Staying in at least one night every weekend.\n\nQuestion: Something that's non-negotiable for me is...\nAnswer: Traveling the world. Let's do it together!\n\nQuestion: I bet you can't...\nAnswer: Take me out to a baseball game.\n\nQuestion: I bet you can't...\nAnswer: Get me to go on a date with you.\n\nQuestion: I bet you can't...\nAnswer: Cook a better meal than I can.\n\nQuestion: My most controversial opinion is...\nAnswer: Coffee is overrated.\n\nQuestion: My most controversial opinion is...\nAnswer: I'd rather have a 365-day winter than suffer through a year-long summer.\n\nQuestion: My most controversial opinion is...\nAnswer: Reproductive rights are human rights.\n\nQuestion: I'm weirdly attracted to...\nAnswer: People with dogs.\n\nQuestion: I'm weirdly attracted to...\nAnswer: Anyone that can make me laugh so hard my margarita comes out my nose.\n\nQuestion: I'm weirdly attracted to...\nAnswer: Guys that take me on brewery dates.\n\nQuestion: My self-care routine is...\nAnswer: Drinking a bottle of wine while watching trashy television.\n\nQuestion: My self-care routine is...\nAnswer: Doing absolutely nothing at home.\n\nQuestion: My self-care routine is...\nAnswer: Going on a long walk or working out.\n\nQuestion: The key to my heart is...\nAnswer: Someone that gets my dry Complete this sentence in under 50 characters so you can find the love of your life: ";
 const prompts = [
   "This year, I really want to...",
   "I recently discovered that...",
@@ -108,6 +108,9 @@ export default function Home() {
     const response = await fetch("/api/kickoffConversation", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        characterId: account.characterId,
+      }),
     });
 
     if (!response.ok) {
@@ -215,8 +218,22 @@ export default function Home() {
       )}
 
       {/* {conversation && <h1>Conversation: {conversation.id}</h1>} */}
+      {/* If the user has an account but no character ID, they have not completed Vana setup */}
+      {account && !account.characterId && (
+        <p className="mb-2 flex flex-col items-center justify-center gap-2">
+          You need to complete your Vana Gotchi setup before you can use this
+          app.
+          <a
+            href="https://gotchi.vana.com/invite"
+            className="px-6 py-2 text-center bg-black text-white w-[300px] mx-auto rounded-lg"
+          >
+            Vana Gotchi Setup &rarr;
+          </a>
+        </p>
+      )}
 
-      {account && !conversation ? (
+      {/* If the user has an account and a character ID, they have completed Vana setup */}
+      {account?.characterId && !conversation ? (
         <button
           onClick={kickoffConversation}
           className="px-6 py-2 text-center bg-black text-white w-[300px] mx-auto rounded-lg"
@@ -230,6 +247,7 @@ export default function Home() {
       {conversation ? (
         <>
           <GenerateNewPromptInput
+            isFirstPrompt={promptsAndResponses.length === 0}
             nextPrompt={nextPrompt}
             conversation={conversation}
             promptsAndResponses={promptsAndResponses}
@@ -243,11 +261,13 @@ export default function Home() {
 }
 
 function GenerateNewPromptInput({
+  isFirstPrompt,
   nextPrompt,
   conversation,
   promptsAndResponses,
   setPromptsAndResponses,
 }: {
+  isFirstPrompt: boolean;
   nextPrompt: string;
   conversation: Conversation;
   promptsAndResponses: PromptAndResponse[];
@@ -288,7 +308,9 @@ function GenerateNewPromptInput({
   return (
     <div className="flex justify-center w-full pt-16">
       <button
-        className={`mb-4 p-4 z-10 fixed top-4 left-4 bg-black text-white rounded-xl w-[calc(100%-2rem)] font-sans ${
+        className={`mb-4 transition-transform duration-500 p-4 z-10 fixed left-4 bg-black text-white rounded-xl w-[calc(100%-2rem)] font-sans 
+        ${isFirstPrompt ? "top-1/2 transform -translate-y-1/2" : "top-4"}
+        ${
           isGenerating
             ? "animate-pulse cursor-wait"
             : !nextPrompt
@@ -303,7 +325,7 @@ function GenerateNewPromptInput({
           );
         }}
       >
-        Generate New Prompt 🎉
+        Generate {isFirstPrompt ? "First" : "New"} Prompt 🎉
       </button>
     </div>
   );
@@ -314,21 +336,13 @@ function DesktopLayout({
 }: {
   renderedPrompts: PromptAndResponse[];
 }) {
-  const [type, setType] = useState<"smallBig" | "serifSans">("smallBig");
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <button
-        className="fixed z-10 bottom-2 right-2 px-4 py-2 bg-black text-white rounded-xl font-sans"
-        onClick={() => setType(type === "smallBig" ? "serifSans" : "smallBig")}
-      >
-        Toggle type
-      </button>
       {renderedPrompts.map((prompt) => (
         <HingeCard
           key={prompt.prompt}
           prompt={prompt.prompt}
           response={prompt.response}
-          type={type}
         />
       ))}
     </section>

@@ -10,6 +10,7 @@ export interface Account {
   meta: {};
   tags: [];
   profilePictureUrl: string;
+  characterId?: string;
 }
 
 export interface Conversation {
