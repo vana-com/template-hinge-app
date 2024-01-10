@@ -104,12 +104,12 @@ export default function Home() {
   // };
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
-  const kickoffConversation = async () => {
+  const kickoffConversation = async (characterId: string) => {
     const response = await fetch("/api/kickoffConversation", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        characterId: account.characterId,
+        characterId: characterId,
       }),
     });
 
@@ -235,10 +235,21 @@ export default function Home() {
       {/* If the user has an account and a character ID, they have completed Vana setup */}
       {account?.characterId && !conversation ? (
         <button
-          onClick={kickoffConversation}
-          className="px-6 py-2 text-center bg-black text-white w-[300px] mx-auto rounded-lg"
+          onClick={() => kickoffConversation(account.characterId)}
+          className="px-6 py-2 text-center border border-solid border-black bg-black text-white w-[330px] mx-auto rounded-lg"
         >
-          Kickoff Conversation
+          Kickoff Conversation with Yourself
+        </button>
+      ) : null}
+
+      {account?.characterId && !conversation ? (
+        <button
+          onClick={
+            () => kickoffConversation("45ac30db-45bd-442f-b31a-cab27797a8e6") // Sample character ID
+          }
+          className="px-6 w-[330px] py-2 text-center bg-white text-black border border-solid border-black mx-auto rounded-lg mt-1"
+        >
+          Kickoff Conversation with a Sample
         </button>
       ) : null}
 
