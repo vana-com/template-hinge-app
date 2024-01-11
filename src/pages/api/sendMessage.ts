@@ -2,7 +2,7 @@ import { parseJwt } from "@/utils/parseJwt";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    res.status(405).send({ message: "Method not allowed" });
   }
 
   const accessToken = req.cookies.token; // Assuming the access token is stored in an HTTP-only cookie named 'token'
