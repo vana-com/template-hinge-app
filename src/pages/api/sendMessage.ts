@@ -1,9 +1,9 @@
 import { parseJwt } from "@/utils/parseJwt";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.status(405).json({ message: "Method not allowed" });
-  }
+  // if (req.method !== "POST") {
+  //   res.status(405).json({ message: "Method not allowed" });
+  // }
 
   const accessToken = req.cookies.token; // Assuming the access token is stored in an HTTP-only cookie named 'token'
   const idToken = req.cookies.id_token; // Assuming the ID token is stored in an HTTP-only cookie named 'id_token'
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
     // }
 
     const responseData = await vanaResponse.json();
-    res.status(200).json(responseData);
+    res.status(200).send(responseData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
