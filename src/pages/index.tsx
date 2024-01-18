@@ -313,7 +313,12 @@ function GenerateNewPromptInput({
         }}
       >
         {isFirstPrompt ? (
-          <h1 className="text-xl font-sans font-bold max-w-xl mx-auto">
+          <h1
+            className="text-xl font-sans font-bold mx-auto"
+            style={{
+              maxWidth: "max(95vw, 300px)",
+            }}
+          >
             Your Gotchi will help you craft the perfect responses for your
             dating profile. To get started, click here, we&apos;ll ask your
             Gotchi a common Hinge prompt, and have it do the work for you!
