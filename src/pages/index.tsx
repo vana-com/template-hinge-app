@@ -1,13 +1,13 @@
 import HingeCard from "@/components/HingeCard";
 import { useEffect, useMemo, useState } from "react";
 import {
-  codeChallenge,
+  // codeChallenge,
   codeVerifier,
   generateCodeChallenge,
 } from "@/utils/codes";
-import { Account, Conversation, PromptAndResponse } from "@/types";
+import { Account, Conversation, Speaker, PromptAndResponse } from "@/types";
 import { useRouter } from "next/router";
-import { useLocalStorage } from "usehooks-ts";
+import { useEffectOnce, useLocalStorage, useUpdateEffect } from "usehooks-ts";
 import LandingPage from "@/components/Landing";
 
 const PROMPT_ENGINEERING_INSTRUCTIONS =
@@ -66,43 +66,25 @@ export default function Home() {
   }, []);
 
   const [account, setAccount] = useState<Account | undefined>(undefined);
-  const fetchAccounts = async () => {
-    try {
-      const response = await fetch("/api/account");
-      if (!response.ok) {
-        throw new Error("Failed to fetch account");
+  useEffectOnce(() => {
+    const fetchAccounts = async () => {
+      try {
+        const response = await fetch("/api/account");
+        if (!response.ok) {
+          throw new Error("Failed to fetch account");
+        }
+        const res = await response.json();
+        console.log(res); // Process accounts data
+        if (res.success) {
+          setAccount(res.account);
+        }
+      } catch (error) {
+        console.error("Error fetching account:", error);
       }
-      const res = await response.json();
-      console.log(res); // Process accounts data
-      if (res.success) {
-        setAccount(res.account);
-      }
-    } catch (error) {
-      console.error("Error fetching account:", error);
-    }
-  };
+    };
 
-  useEffect(() => {
     fetchAccounts();
-  }, []);
-
-  // const getConversation = async (conversationId: string) => {
-  //   const response = await fetch(
-  //     `/api/getConversation?conversationId=${conversationId}`
-  //   );
-
-  //   console.log(response);
-
-  //   if (!response.ok) {
-  //     throw new Error("Failed to grab conversation");
-  //   }
-
-  //   const res = await response.json();
-  //   if (res.id) {
-  //     console.log(res); // Process accounts data
-  //     setConversation(res);
-  //   }
-  // };
+  });
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const kickoffConversation = async (characterId: string) => {
@@ -120,48 +102,10 @@ export default function Home() {
     const res = await response.json();
 
     if (res.id) {
-      console.log("Conversation:", res); // Process   accounts data
+      console.log("Conversation:", res); // Process accounts data
       setConversation(res);
-
-      // localStorage.setItem("conversationId", res.id);
-      // Append the conversation ID to the router
-      router.push(`?conversation=${res.id}`);
     }
   };
-
-  // On page load, if there is a conversation ID in the URL, fetch the conversation
-  useEffect(() => {
-    async function getConversationFromUrl() {
-      const conversationId = router.query.conversation;
-      console.log(conversationId);
-      if (conversationId) {
-        try {
-          const response = await fetch(
-            `/api/getConversation?conversationId=${conversationId}`
-          );
-
-          console.log(response);
-
-          if (!response.ok) {
-            throw new Error("Failed to grab conversation");
-          }
-
-          const res = await response.json();
-          if (res.conversation.id) {
-            console.log(res); // Process accounts data
-            setConversation(res.conversation);
-          }
-        } catch (error) {
-          console.error("Error fetching conversation:", error);
-        }
-      }
-    }
-    getConversationFromUrl();
-  }, [router]);
-
-  // const [promptsAndResponses, setPromptsAndResponses] = useState<
-  //   PromptAndResponse[]
-  //   >([]);
 
   const [promptsAndResponses, setPromptsAndResponses] = useLocalStorage<
     PromptAndResponse[]
@@ -171,43 +115,46 @@ export default function Home() {
     return prompts[promptsAndResponses.length];
   }, [promptsAndResponses]);
 
-  // useEffect(() => {
-  //   async function getOrKickoffConversation() {
-  //     const conversationId = localStorage.getItem("conversationId");
-  //     console.log(conversationId);
-  //     if (conversationId) {
-  //       try {
-  //         await getConversation(conversationId);
-  //       } catch (error) {
-  //         await kickoffConversation();
-  //       }
-  //     }
-
-  //     // if (account) {
-  //     //   await kickoffConversation();
-  //     // }
-  //   }
-  //   getOrKickoffConversation();
-  // }, [account]);
-
-  // Whenever promptsAndResponses changes, refetch the conversation
-  // useEffect(() => {
-  //   async function kickoffConversationAsync() {
-  //     await getConversation(conversation.id);
-  //   }
-  //   if (promptsAndResponses.length > 0) {
-  //     getConversation(conversation.id);
-  //   }
-  // }, [promptsAndResponses, conversation]);
-
   // Only once, first time visiting with an account, kickoff a conversation
-  useEffect(() => {
-    const redirectedFromAuth = router.query.fromAuth;
-    console.log(redirectedFromAuth);
-    if (account && redirectedFromAuth && !conversation) {
-      kickoffConversation(account.characterId);
+  useUpdateEffect(() => {
+    if (!account) return;
+
+    // If the user has an active conversation, resume it. If not, kickoff a new one.
+    async function kickoffConversationAsync() {
+      if (account) {
+        await fetch("/api/getAllConversations").then(async (response) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch conversations");
+          }
+          const res = await response.json();
+          if (!res.success) return;
+
+          const activeConversation =
+            res.conversations?.length > 0 ? res.conversations[0] : null;
+          // const activeConversation = res.conversations.find(
+          //   (conversation: Conversation) => {
+          //     const speakers: Speaker[] = conversation.speakers;
+          //     return (
+          //       (speakers[0].participantId === account.id &&
+          //         speakers[1].participantId === account.characterId) ||
+          //       (speakers[1].participantId === account.id &&
+          //         speakers[0].participantId === account.characterId)
+          //     );
+          //   }
+          // );
+          console.log("ACTIVE CONVERSATION FOUND: ", activeConversation);
+          if (activeConversation) {
+            setConversation(activeConversation);
+            // router.push(`?conversation=${activeConversation.id}`);
+          } else {
+            if (!account.characterId) return;
+            await kickoffConversation(account.characterId);
+          }
+        });
+      }
     }
-  }, [account, conversation, router]);
+    kickoffConversationAsync();
+  }, [account]);
 
   if (!account) {
     return (
@@ -228,20 +175,6 @@ export default function Home() {
         conversation ? "justify-start" : "justify-center"
       }`}
     >
-      {account && !conversation && (
-        <div className="flex flex-col items-center justify-center gap-2">
-          <p className="mb-2">
-            Welcome, {account.username}! It doesn&apos;t look like we have an
-            active conversation going with your Gotchi.
-          </p>
-          <button
-            onClick={() => kickoffConversation(account.characterId)}
-            className="px-6 py-2 text-center border border-solid border-black bg-black text-white w-[330px] mx-auto rounded-lg mt-1"
-          >
-            Kickoff now
-          </button>
-        </div>
-      )}
       {!account && (
         <a
           href={oAuthUrl}
@@ -353,8 +286,12 @@ function GenerateNewPromptInput({
   return (
     <div className="flex justify-center w-full pt-16">
       <button
-        className={`mb-4 transition-transform duration-500 p-4 z-10 fixed left-4 bg-black text-white rounded-xl w-[calc(100%-2rem)] font-sans 
-        ${isFirstPrompt ? "top-1/2 transform -translate-y-1/2" : "top-4"}
+        className={`mb-4 transition-transform duration-500 p-4 z-10 fixed bg-black text-white rounded-xl font-sans 
+        ${
+          isFirstPrompt
+            ? "w-max mx-auto top-1/2 transform -translate-y-1/2"
+            : "top-4 w-[calc(100%-2rem)] left-4"
+        }
         ${
           isGenerating
             ? "animate-pulse cursor-wait"
@@ -367,11 +304,24 @@ function GenerateNewPromptInput({
           console.log(conversation);
           sendMessage(
             conversation.id,
-            `${PROMPT_ENGINEERING_INSTRUCTIONS}${nextPrompt}`
+            // The first time we prompt, we send the instructions along with the prompt
+            true
+              ? `${PROMPT_ENGINEERING_INSTRUCTIONS}${nextPrompt}`
+              : // Every subsequent time, we just send the prompt
+                nextPrompt
           );
         }}
       >
-        Generate {isFirstPrompt ? "First" : "New"} Prompt 🎉
+        {isFirstPrompt ? (
+          <h1 className="text-xl font-sans font-bold max-w-xl mx-auto">
+            Your Gotchi will help you craft the perfect responses for your
+            dating profile. To get started, click here, we&apos;ll ask your
+            Gotchi a common Hinge prompt, and have it do the work for you!
+          </h1>
+        ) : (
+          <span>Generate another prompt and response 🎉</span>
+        )}
+        {/* Generate {isFirstPrompt ? "First" : "New"} Prompt 🎉 */}
       </button>
     </div>
   );
@@ -384,9 +334,9 @@ function DesktopLayout({
 }) {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {renderedPrompts.map((prompt) => (
+      {renderedPrompts.map((prompt, index) => (
         <HingeCard
-          key={prompt.prompt}
+          key={`${prompt.prompt}-${index}`}
           prompt={prompt.prompt}
           response={prompt.response}
         />
@@ -394,31 +344,3 @@ function DesktopLayout({
     </section>
   );
 }
-
-// function PhoneLayout({
-//   renderedPrompts,
-// }: {
-//   renderedPrompts: PromptAndResponse[];
-// }) {
-//   return (
-//     <section className="max-w-xl mx-auto">
-//       <h1 className="text-4xl font-sans font-bold mb-2">Connor (gotchi)</h1>
-
-//       <img
-//         src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80"
-//         alt="Connor"
-//         className="rounded-xl mb-8"
-//       />
-
-//       <div className="grid grid-cols-1 gap-4">
-//         {renderedPrompts.map((prompt) => (
-//           <HingeCard
-//             key={prompt.prompt}
-//             prompt={prompt.prompt}
-//             response={prompt.response}
-//           />
-//         ))}
-//       </div>
-//     </section>
-//   );
-// }

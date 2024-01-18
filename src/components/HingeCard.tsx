@@ -7,10 +7,10 @@ const classNames = (...classes: string[]) => classes.filter(Boolean).join(" ");
 export default function HingeCard({ prompt, response }: PromptAndResponse) {
   const [userSwipe, setUserSwipe] = useState<"loved" | "hated" | null>(null);
 
+  const uuid = Math.random().toString(36).substring(7);
   return (
-    <Tiltable key={prompt}>
+    <Tiltable key={uuid}>
       <SmallBig
-        key={prompt}
         prompt={prompt}
         response={response}
         userSwipe={userSwipe}
@@ -66,79 +66,80 @@ function SmallBig({
 
   return (
     <div
-      key={prompt}
       className={classNames(
         "flex flex-col justify-start gap-2 w-full h-full z-50 p-6 transition-all",
         userSwipe === "loved" ? "bg-red-50" : "",
         userSwipe === "hated" ? "bg-gray-100 opacity-70" : ""
       )}
     >
-      <AnimatePresence key={prompt}>
-        <p className="h-[55px] text-9xl text-gray-300 font-serif leading-none">
-          &ldquo;
-        </p>
-        <motion.h1
-          className="relative font-sans text-lg font-normal"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+      {/* <AnimatePresence> */}
+      <p className="h-[55px] text-9xl text-gray-300 font-serif leading-none">
+        &ldquo;
+      </p>
+      <motion.h1
+        key={`${prompt}-prompt`}
+        className="relative font-sans text-lg font-normal"
+        // initial={{ opacity: 0, y: 20 }}
+        // animate={{ opacity: 1, y: 0 }}
+        // exit={{ opacity: 0, y: 20 }}
+      >
+        {prompt}
+      </motion.h1>
+      {/* Scrim gradient to bottom so they know to scroll to read more. */}
+      <motion.h2
+        key={`${response}-response`}
+        className="text-gray-800 font-semibold text-2xl font-serif overflow-auto relative pb-6"
+        // initial={{ opacity: 0 }}
+        // animate={{ opacity: 1 }}
+        // exit={{ opacity: 0 }}
+        // transition={{ delay: 0.2, duration: 0.3 }}
+      >
+        {response}
+      </motion.h2>
+      <div
+        className={`pointer-events-none absolute bottom-6 w-[calc(100%-3rem)] h-12 bg-gradient-to-t ${
+          !userSwipe
+            ? "from-white"
+            : userSwipe === "loved"
+            ? "from-red-50"
+            : "from-gray-100"
+        }`}
+      />
+      <button
+        onClick={handleCopyToClipboard}
+        className="p-3 rounded-full absolute bottom-2 right-2 hover:bg-gray-200 transition-colors"
+        aria-label="Copy to clipboard"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          className="w-6 h-6"
         >
-          {prompt}
-        </motion.h1>
-        {/* Scrim gradient to bottom so they know to scroll to read more. */}
-        <motion.h2
-          className="text-gray-800 font-semibold text-2xl font-serif overflow-auto relative pb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-        >
-          {response}
-        </motion.h2>
-        <div
-          className={`pointer-events-none absolute bottom-6 w-[calc(100%-3rem)] h-12 bg-gradient-to-t ${
-            !userSwipe
-              ? "from-white"
-              : userSwipe === "loved"
-              ? "from-red-50"
-              : "from-gray-100"
-          }`}
-        />
-        <button
-          onClick={handleCopyToClipboard}
-          className="p-3 rounded-full absolute bottom-2 right-2 hover:bg-gray-200 transition-colors"
-          aria-label="Copy to clipboard"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
-            />
-          </svg>
-          <AnimatePresence>
-            {isCopied && (
-              <motion.p
-                initial={{ opacity: 0, y: "-50%", x: "-50%" }}
-                animate={{ opacity: 1, y: "-105%", x: "-50%" }}
-                exit={{ opacity: 0, y: "-105%", x: "-50%" }}
-                className="absolute left-1/2 top-0 text-xs text-gray-500 transform text-center"
-              >
-                Copied!
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </button>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
+          />
+        </svg>
+        <AnimatePresence>
+          {isCopied && (
+            <motion.p
+              initial={{ opacity: 0, y: "-50%", x: "-50%" }}
+              animate={{ opacity: 1, y: "-105%", x: "-50%" }}
+              exit={{ opacity: 0, y: "-105%", x: "-50%" }}
+              className="absolute left-1/2 top-0 text-xs text-gray-500 transform text-center"
+            >
+              Copied!
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </button>
 
-        <HeartCircle userSwipe={userSwipe} setUserSwipe={setUserSwipe} />
-      </AnimatePresence>
+      <HeartCircle userSwipe={userSwipe} setUserSwipe={setUserSwipe} />
+      {/* </AnimatePresence> */}
     </div>
   );
 }

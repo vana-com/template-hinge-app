@@ -13,9 +13,17 @@ export interface Account {
   characterId?: string;
 }
 
+export interface Speaker {
+  avatarUrl: string | null;
+  id: string;
+  name: string;
+  participantId: string;
+  participantType: string;
+}
+
 export interface Conversation {
   id: string;
-  speakers: string[];
+  speakers: Speaker[];
   created: string;
   updated: string;
   //   messages: Message[];
