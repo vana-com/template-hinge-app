@@ -177,6 +177,15 @@ export default function LandingPage({
             />
           ))}
         </InteractiveMarquee>
+        <InteractiveMarquee direction="backwards">
+          {prompts.slice(24, 30).map((prompt) => (
+            <HingeCardReadOnly
+              key={prompt.prompt}
+              prompt={prompt.prompt}
+              response={prompt.response}
+            />
+          ))}
+        </InteractiveMarquee>
         {/* Scrim gradient at bottom */}
         <div className="pointer-events-none absolute bottom-0 w-full h-96 bg-gradient-to-t from-gray-500" />
         <div className="pointer-events-none absolute top-0 w-full h-96 bg-gradient-to-b from-gray-500" />
