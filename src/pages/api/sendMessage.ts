@@ -34,6 +34,12 @@ export default async function handler(req, res) {
       }
     );
 
+    if (!clearResponse.ok) {
+      throw new Error("Failed to clear conversation");
+    }
+    const clearData = await clearResponse.json();
+    console.log(clearData);
+
     const vanaResponse = await fetch(
       `https://development-gotchi-js-api.vana.com/api/v0/conversations/${req.body.conversationId}/chat`,
       {

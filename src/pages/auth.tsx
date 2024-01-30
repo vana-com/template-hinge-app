@@ -34,7 +34,7 @@ function AuthPage() {
         const data = await response.json();
         console.log(data); // Handle response
         if (data.success === true) {
-          router.push("/");
+          router.push("/?auth=success");
         }
       } catch (error) {
         console.error(error);

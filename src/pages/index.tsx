@@ -156,7 +156,7 @@ export default function Home() {
     kickoffConversationAsync();
   }, [account]);
 
-  if (!account) {
+  if (!account && router.query.auth !== "success") {
     return (
       <LandingPage>
         <a
@@ -175,14 +175,14 @@ export default function Home() {
         conversation ? "justify-start" : "justify-center"
       }`}
     >
-      {!account && (
+      {/* {!account && router.query.auth !== "success" && (
         <a
           href={oAuthUrl}
           className="px-6 py-2 text-center bg-black text-white w-[300px] mx-auto rounded-lg"
         >
           Login with Vana
         </a>
-      )}
+      )} */}
 
       {/* {conversation && <h1>Conversation: {conversation.id}</h1>} */}
       {/* If the user has an account but no character ID, they have not completed Vana setup */}
@@ -285,13 +285,22 @@ function GenerateNewPromptInput({
 
   return (
     <div className="flex justify-center w-full pt-16">
-      <button
-        className={`mb-4 transition-transform duration-500 p-4 z-10 fixed bg-black text-white rounded-xl font-sans 
-        ${
+      <div
+        className={`fixed z-50 flex justify-center items-center flex-col gap-4 transition-transform ${
           isFirstPrompt
-            ? "w-max mx-auto top-1/2 transform -translate-y-1/2"
+            ? "top-1/2 transform -translate-y-1/2 w-[calc(100%-2rem)] left-4"
             : "top-4 w-[calc(100%-2rem)] left-4"
-        }
+        }`}
+      >
+        {isFirstPrompt ? (
+          <h1 className="text-xl font-sans font-bold mx-auto max-w-prose">
+            Welcome! Your Gotchi will help you craft the perfect responses for
+            your dating profile. To get started, we&apos;ll ask your Gotchi a
+            common Hinge prompt, and have it do the work for you!
+          </h1>
+        ) : null}
+        <button
+          className={`mb-4 w-full duration-500 p-4 z-50 bg-black text-white rounded-xl font-sans 
         ${
           isGenerating
             ? "animate-pulse cursor-wait"
@@ -299,35 +308,24 @@ function GenerateNewPromptInput({
             ? "cursor-not-allowed opacity-50"
             : "cursor-pointer"
         }`}
-        disabled={!nextPrompt || isGenerating}
-        onClick={() => {
-          console.log(conversation);
-          sendMessage(
-            conversation.id,
-            // The first time we prompt, we send the instructions along with the prompt
-            true
-              ? `${PROMPT_ENGINEERING_INSTRUCTIONS}${nextPrompt}`
-              : // Every subsequent time, we just send the prompt
-                nextPrompt
-          );
-        }}
-      >
-        {isFirstPrompt ? (
-          <h1
-            className="text-xl font-sans font-bold mx-auto"
-            style={{
-              maxWidth: "max(95vw, 300px)",
-            }}
-          >
-            Your Gotchi will help you craft the perfect responses for your
-            dating profile. To get started, click here, we&apos;ll ask your
-            Gotchi a common Hinge prompt, and have it do the work for you!
-          </h1>
-        ) : (
-          <span>Generate another prompt and response 🎉</span>
-        )}
-        {/* Generate {isFirstPrompt ? "First" : "New"} Prompt 🎉 */}
-      </button>
+          disabled={!nextPrompt || isGenerating}
+          onClick={() => {
+            console.log(conversation);
+            sendMessage(
+              conversation.id,
+              // The first time we prompt, we send the instructions along with the prompt
+              true
+                ? `${PROMPT_ENGINEERING_INSTRUCTIONS}${nextPrompt}`
+                : // Every subsequent time, we just send the prompt
+                  nextPrompt
+            );
+          }}
+        >
+          {isGenerating
+            ? "Generating prompt and response 🤖"
+            : `Generate ${isFirstPrompt ? "first" : "new"} prompt 🎉`}
+        </button>
+      </div>
     </div>
   );
 }
@@ -338,10 +336,10 @@ function DesktopLayout({
   renderedPrompts: PromptAndResponse[];
 }) {
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {renderedPrompts.map((prompt, index) => (
+    <section className="flex flex-col-reverse gap-4 max-w-[400px]">
+      {renderedPrompts.map((prompt) => (
         <HingeCard
-          key={`${prompt.prompt}-${index}`}
+          key={`${prompt.prompt}`}
           prompt={prompt.prompt}
           response={prompt.response}
         />

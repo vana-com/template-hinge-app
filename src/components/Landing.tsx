@@ -198,17 +198,19 @@ export default function LandingPage({
           <Heart />
         </div>
         <h1 className="font-sans text-5xl font-semibold mb-3">
-          Match with your Gotchi
+          Meet Your Hinge Copilot
         </h1>
         <h2 className="font-sans text-xl font-normal mb-6">
-          Use your{" "}
+          {/* Have your{" "}
           <a
             className="underline underline-offset-4"
             href="https://gotchi.vana.com/"
           >
             Vana Gotchi
           </a>{" "}
-          to help craft those perfect responses.
+          help perfect your dating profile with better responses */}
+          Have an AI draft your dating profile, so you can focus on the more
+          human parts of love
         </h2>
         {children}
       </div>

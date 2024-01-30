@@ -8,6 +8,8 @@ export default function HingeCard({ prompt, response }: PromptAndResponse) {
   const [userSwipe, setUserSwipe] = useState<"loved" | "hated" | null>(null);
 
   const uuid = Math.random().toString(36).substring(7);
+  if (userSwipe === "hated") return null;
+
   return (
     <Tiltable key={uuid}>
       <SmallBig
@@ -56,7 +58,7 @@ function SmallBig({
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyToClipboard = () => {
-    copyToClipboard(`${prompt}\n\n${response}`)
+    copyToClipboard(response)
       .then(() => {
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
@@ -67,8 +69,8 @@ function SmallBig({
   return (
     <div
       className={classNames(
-        "flex flex-col justify-start gap-2 w-full h-full z-50 p-6 transition-all",
-        userSwipe === "loved" ? "bg-red-50" : "",
+        "flex flex-col justify-start gap-2 w-full h-full z-50 p-6 transition-colors duration-300",
+        userSwipe === "loved" ? "bg-red-50/50" : "",
         userSwipe === "hated" ? "bg-gray-100 opacity-70" : ""
       )}
     >
@@ -94,15 +96,15 @@ function SmallBig({
         // exit={{ opacity: 0 }}
         // transition={{ delay: 0.2, duration: 0.3 }}
       >
-        {response}
+        {/* If the prompt exists at the beginning of the response, remove it. */}
+        {/* But first remove the last three from prompt (...) */}
+        {response.startsWith(prompt.slice(0, -3))
+          ? response.slice(prompt.length - 3)
+          : response}
       </motion.h2>
       <div
         className={`pointer-events-none absolute bottom-6 w-[calc(100%-3rem)] h-12 bg-gradient-to-t ${
-          !userSwipe
-            ? "from-white"
-            : userSwipe === "loved"
-            ? "from-red-50"
-            : "from-gray-100"
+          !userSwipe ? "from-white" : userSwipe === "loved" ? "" : ""
         }`}
       />
       <button
@@ -152,7 +154,7 @@ function HeartCircle({
   setUserSwipe: (swipe: "loved" | "hated" | null) => void;
 }) {
   return (
-    <div className="z-50 absolute top-0 right-0 m-2 flex flex-row gap-1">
+    <div className="z-50 absolute top-0 right-0 m-2 flex flex-row gap-1 select-none">
       <div
         className="cursor-pointer w-12 h-12 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition"
         onClick={() => setUserSwipe(userSwipe === "hated" ? null : "hated")}
