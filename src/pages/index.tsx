@@ -58,7 +58,7 @@ export default function Home() {
       const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL}/auth`;
       const CODE_CHALLENGE = await generateCodeChallenge(codeVerifier);
       const CODE_CHALLENGE_METHOD = "S256";
-      const url = `https://development-oauth.vana.com/oauth2/auth?response_type=${RESPONSE_TYPE}&client_id=${CLIENT_ID}&state=${STATE}&scope=${SCOPE}&redirect_uri=${REDIRECT_URI}&code_challenge=${CODE_CHALLENGE}&code_challenge_method=${CODE_CHALLENGE_METHOD}`;
+      const url = `${process.env.NEXT_PUBLIC_VANA_OAUTH_URL}/oauth2/auth?response_type=${RESPONSE_TYPE}&client_id=${CLIENT_ID}&state=${STATE}&scope=${SCOPE}&redirect_uri=${REDIRECT_URI}&code_challenge=${CODE_CHALLENGE}&code_challenge_method=${CODE_CHALLENGE_METHOD}`;
 
       setOAuthUrl(url);
     }

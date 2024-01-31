@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     console.log(accessToken, accountId);
 
     const vanaResponse = await fetch(
-      `https://development-gotchi-js-api.vana.com/api/v0/accounts/${accountId}`,
+      `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/accounts/${accountId}`,
       {
         method: "GET",
         headers: {

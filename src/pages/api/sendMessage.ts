@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     // Before sending a message, clear the existing conversation history.
     // https://api.vana.com/api/v0/conversations/:conversation-id/clear
     const clearResponse = await fetch(
-      `https://development-gotchi-js-api.vana.com/api/v0/conversations/${req.body.conversationId}/clear`,
+      `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/conversations/${req.body.conversationId}/clear`,
       {
         method: "POST",
         headers: {
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     console.log(clearData);
 
     const vanaResponse = await fetch(
-      `https://development-gotchi-js-api.vana.com/api/v0/conversations/${req.body.conversationId}/chat`,
+      `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/conversations/${req.body.conversationId}/chat`,
       {
         method: "POST",
         headers: {
