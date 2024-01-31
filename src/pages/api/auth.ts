@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     const tokenResponse = await fetch(
-      "https://development-oauth.vana.com/oauth2/token",
+      `${process.env.NEXT_PUBLIC_VANA_OAUTH_URL}/oauth2/token`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
