@@ -22,11 +22,6 @@ export default function HingeCard({ prompt, response }: PromptAndResponse) {
   );
 }
 
-/**
- * Copies a given text to the clipboard.
- * @param {string} text - The text to be copied to the clipboard.
- * @returns {Promise<void>} - A promise that resolves if the copy was successful, and rejects if not.
- */
 async function copyToClipboard(text: string): Promise<void> {
   if (!navigator.clipboard) {
     // Clipboard API not available
@@ -74,16 +69,12 @@ function SmallBig({
         userSwipe === "hated" ? "bg-gray-100 opacity-70" : ""
       )}
     >
-      {/* <AnimatePresence> */}
       <p className="h-[55px] text-9xl text-gray-300 font-serif leading-none">
         &ldquo;
       </p>
       <motion.h1
         key={`${prompt}-prompt`}
         className="relative font-sans text-lg font-normal"
-        // initial={{ opacity: 0, y: 20 }}
-        // animate={{ opacity: 1, y: 0 }}
-        // exit={{ opacity: 0, y: 20 }}
       >
         {prompt}
       </motion.h1>
@@ -91,10 +82,6 @@ function SmallBig({
       <motion.h2
         key={`${response}-response`}
         className="text-gray-800 font-semibold text-2xl font-serif overflow-auto relative pb-6"
-        // initial={{ opacity: 0 }}
-        // animate={{ opacity: 1 }}
-        // exit={{ opacity: 0 }}
-        // transition={{ delay: 0.2, duration: 0.3 }}
       >
         {/* If the prompt exists at the beginning of the response, remove it. */}
         {/* But first remove the last three from prompt (...) */}
@@ -141,7 +128,6 @@ function SmallBig({
       </button>
 
       <HeartCircle userSwipe={userSwipe} setUserSwipe={setUserSwipe} />
-      {/* </AnimatePresence> */}
     </div>
   );
 }
@@ -171,12 +157,12 @@ function HeartCircle({
   );
 }
 
-// Put these anywhere you wish, I personally put them into a dedicated `utils` file.
-export function round(num: number, fix = 2) {
+// Utils to make the card tilt
+function round(num: number, fix = 2) {
   return parseFloat(num.toFixed(fix));
 }
 
-export function distance(x1: number, y1: number, x2: number, y2: number) {
+function distance(x1: number, y1: number, x2: number, y2: number) {
   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
@@ -246,31 +232,6 @@ function Tiltable({ children }: { children: React.ReactNode }) {
         perspective: "10000px",
       }}
     >
-      {/* <motion.div
-        style={{
-          zIndex: 2,
-          mixBlendMode: "overlay",
-          position: "absolute",
-          transform: "translateZ(1px)",
-          width: "100%",
-          height: "100%",
-          borderRadius: "0.5rem",
-          transformStyle: "preserve-3d",
-          left: 0,
-          top: 0,
-          pointerEvents: "none",
-          opacity: 0,
-        }}
-        animate={{
-          background: `radial-gradient(
-            farthest-corner circle at ${glare.x}% ${glare.y}%,
-            rgba(255, 255, 255, 0.2) 10%,
-            rgba(255, 255, 255, 0.1) 24%,
-            rgba(0, 0, 0, 0.4) 82%
-          )`,
-          opacity: glare?.opacity ?? 0,
-        }}
-      /> */}
       {children}
     </motion.div>
   );

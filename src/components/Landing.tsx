@@ -1,13 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import {
-  motion,
-  useSpring,
-  useTransform,
-  PanInfo,
-  MotionValue,
-  useMotionValue,
-} from "framer-motion";
-import normalizeWheel from "normalize-wheel";
+import { motion, useSpring, MotionValue } from "framer-motion";
 import { useRafLoop } from "react-use";
 import { useWindowSize } from "@react-hook/window-size";
 
@@ -201,14 +193,6 @@ export default function LandingPage({
           Meet Your Hinge Copilot
         </h1>
         <h2 className="font-sans text-xl font-normal mb-6">
-          {/* Have your{" "}
-          <a
-            className="underline underline-offset-4"
-            href="https://gotchi.vana.com/"
-          >
-            Vana Gotchi
-          </a>{" "}
-          help perfect your dating profile with better responses */}
           Have an AI draft your dating profile, so you can focus on the more
           human parts of love
         </h2>
@@ -283,71 +267,16 @@ type MarqueeProps = {
 };
 
 const InteractiveMarquee = (props: MarqueeProps) => {
-  const {
-    speed = 0.5,
-    threshold = 0.014,
-    wheelFactor = 1.8,
-    dragFactor = 1.2,
-    children,
-    direction,
-  } = props;
+  const { speed = 0.5, threshold = 0.014, children, direction } = props;
 
-  const marqueeRef = useRef<HTMLDivElement>(null);
   const slowDown = useRef(false);
-  const isScrolling = useRef<NodeJS.Timeout | null>(null);
-  const constraintsRef = useRef<HTMLDivElement>(null);
 
   const x = useRef(0);
-  const [wWidth] = useWindowSize();
   const speedSpring = useSpring(speed, {
     damping: 40,
     stiffness: 90,
     mass: 5,
   });
-
-  const opacity = useTransform(
-    speedSpring,
-    [-wWidth * 0.05, 0, wWidth * 0.05],
-    [1, 0, 1]
-  );
-  const skewX = useTransform(
-    speedSpring,
-    [-wWidth * 0.05, 0, wWidth * 0.05],
-    [1, 0, 1]
-  );
-
-  // const handleOnWheel = (e: React.WheelEvent<HTMLDivElement> | undefined) => {
-  //   const normalized = normalizeWheel(e);
-
-  //   // This will use the wheel to speed up the timeline
-  //   x.current = normalized.pixelY * wheelFactor;
-
-  //   // reset speed on scroll end
-  //   if (isScrolling.current) {
-  //     window.clearTimeout(isScrolling.current);
-  //   }
-
-  //   isScrolling.current = setTimeout(() => {
-  //     speedSpring.set(speed);
-  //   }, 30);
-  // };
-
-  // const handleDragStart = () => {
-  //   slowDown.current = true;
-  //   marqueeRef.current.classList.add("drag");
-  //   speedSpring.set(0);
-  // };
-
-  // const handleOnDrag = (_, info: PanInfo) => {
-  //   speedSpring.set(dragFactor * -info.delta.x);
-  // };
-
-  // const handleDragEnd = (_) => {
-  //   slowDown.current = false;
-  //   marqueeRef.current.classList.remove("drag");
-  //   //rest to the original speed
-  //   x.current = speed;
-  // };
 
   const loop = () => {
     if (slowDown.current || Math.abs(x.current) < threshold) {
@@ -369,20 +298,7 @@ const InteractiveMarquee = (props: MarqueeProps) => {
 
   return (
     <>
-      {/* <motion.div className="bg" style={{ opacity }} ref={constraintsRef} /> */}
-      <motion.div
-        className="flex items-center gap-2 overflow-x-hidden"
-        // ref={marqueeRef}
-        // style={{ skewX }}
-        // drag="x"
-        // dragPropagation={true}
-        // dragConstraints={{ left: 0, right: 0 }}
-        // onWheel={handleOnWheel}
-        // onDragStart={handleDragStart}
-        // onDrag={handleOnDrag}
-        // onDragEnd={handleDragEnd}
-        // dragElastic={0.000001} // needs to be > 0 ¯\_(ツ)_/¯
-      >
+      <motion.div className="flex items-center gap-2 overflow-x-hidden">
         <MarqueeItem speed={speedSpring} direction={direction}>
           {children}
         </MarqueeItem>
@@ -426,9 +342,6 @@ function HingeCardReadOnly({
       >
         {response}
       </motion.h2>
-      {/* <div
-        className={`pointer-events-none absolute bottom-6 w-[calc(100%-3rem)] h-12 bg-gradient-to-t from-gray-100`}
-      /> */}
     </div>
   );
 }

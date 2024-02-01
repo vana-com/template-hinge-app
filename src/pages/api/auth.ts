@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     );
 
     const tokenData = await tokenResponse.json();
-    console.log(tokenData);
+
     // Set token in HTTP-only cookie
     res.setHeader("Set-Cookie", [
       serialize("token", tokenData.access_token, {
