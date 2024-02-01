@@ -7,6 +7,7 @@ import Head from "next/head";
 
 const tobias = localFont({
   src: [
+    // Only one font used
     {
       path: "./fonts/Tobias-SemiBold.woff2",
       weight: "600",
