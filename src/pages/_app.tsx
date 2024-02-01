@@ -9,7 +9,7 @@ const tobias = localFont({
   src: [
     // Only one font used
     {
-      path: "./fonts/Tobias-SemiBold.woff2",
+      path: "./fonts/Tobias-Semibold.woff2",
       weight: "600",
       style: "normal",
     },
