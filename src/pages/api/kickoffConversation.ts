@@ -1,6 +1,10 @@
 import { parseJwt } from "@/utils/parseJwt";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req, res) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
@@ -8,11 +12,14 @@ export default async function handler(req, res) {
   const accessToken = req.cookies.token; // Assuming the access token is stored in an HTTP-only cookie named 'token'
   const idToken = req.cookies.id_token; // Assuming the ID token is stored in an HTTP-only cookie named 'id_token'
 
+  if (!accessToken || !idToken) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
   try {
     // Assuming idToken is the JWT ID token you received
     const decodedToken = parseJwt(idToken);
     const accountId = decodedToken.sub;
-    console.log(accessToken, accountId);
 
     const vanaResponse = await fetch(
       `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/conversations`,

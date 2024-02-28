@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
-import { codeVerifier } from "@/utils/codes";
 
 export default function auth() {
   return <AuthPage />;
@@ -22,19 +21,31 @@ function AuthPage() {
     const sendCodeToServer = async () => {
       if (!code) return;
 
+      if (localStorage.getItem("pkce_state") !== state) {
+        throw new Error("Invalid state");
+      }
+
       try {
         const response = await fetch("/api/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            code: Array.isArray(code) ? code[0] : code,
-            codeVerifier,
+            code: code,
+            codeVerifier: localStorage.getItem("pkce_code_verifier"),
           }),
         });
         const data = await response.json();
-        console.log(data); // Handle response
+
         if (data.success === true) {
-          router.push("/?auth=success");
+          alert("Authenticated!");
+
+          localStorage.setItem("auth_token", data.token);
+
+          router.push("/");
+
+          // Clean these up since we don't need them anymore
+          // localStorage.removeItem("pkce_state");
+          // localStorage.removeItem("pkce_code_verifier");
         }
       } catch (error) {
         console.error(error);
@@ -42,7 +53,7 @@ function AuthPage() {
     };
 
     sendCodeToServer();
-  }, [code, codeVerifier]);
+  }, [router, code]);
 
   return null;
 }
