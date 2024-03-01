@@ -53,20 +53,27 @@ function AuthPage() {
         if (tokenData.access_token) {
           alert("Authenticated!");
 
+          console.log(tokenData);
+
           // Set token in localStorage
           localStorage.setItem("token", tokenData.access_token);
           localStorage.setItem("id_token", tokenData.id_token);
 
-          // Set a non-HTTP-only cookie on the client side
+          // Calculate expiration for the token and set it in the cookie
           const maxAge = tokenData.expires_in; // Time in seconds until expiration
+          const now = new Date();
+          const expirationDate = new Date(now.getTime() + +maxAge);
+
+          localStorage.setItem(
+            "token_expiration",
+            expirationDate.toISOString()
+          );
+
+          // Set a non-HTTP-only cookie on the client side
           document.cookie = `token=${tokenData.access_token}; path=/; secure; samesite=strict; max-age=${maxAge}`;
           document.cookie = `id_token=${tokenData.id_token}; path=/; secure; samesite=strict; max-age=${maxAge}`;
 
           router.push("/");
-
-          // Clean these up since we don't need them anymore
-          // localStorage.removeItem("pkce_state");
-          // localStorage.removeItem("pkce_code_verifier");
         }
       } catch (error) {
         throw new Error("Error authenticating");

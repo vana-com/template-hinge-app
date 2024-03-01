@@ -12,13 +12,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     const checkAuthStatus = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (token) {
-          console.log("User is authenticated");
-          setUserHasToken(true);
-        } else {
-          console.log("User is not authenticated");
+        const expirationDate = localStorage.getItem("token_expiration");
+
+        if (!token || !expirationDate) {
           setUserHasToken(false);
+          return;
         }
+
+        const expirationDateObj = new Date(expirationDate);
+        const now = new Date();
+
+        if (expirationDateObj < now) {
+          setUserHasToken(false);
+          return;
+        }
+
+        setUserHasToken(true);
       } catch (error) {
         console.error("Error checking authentication status", error);
       }
