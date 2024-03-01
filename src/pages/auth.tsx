@@ -26,20 +26,41 @@ function AuthPage() {
       }
 
       try {
-        const response = await fetch("/api/auth", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code: code,
-            codeVerifier: localStorage.getItem("pkce_code_verifier"),
-          }),
+        // Exchange the authorization code for an access token
+        const tokenRequestBody = new URLSearchParams({
+          grant_type: "authorization_code",
+          client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+          redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/auth`,
+          code_verifier: localStorage.getItem("pkce_code_verifier"),
+          code,
         });
-        const data = await response.json();
 
-        if (data.success === true) {
+        const tokenResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_VANA_OAUTH_URL}/oauth2/token`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: tokenRequestBody.toString(),
+          }
+        );
+
+        const tokenData = await tokenResponse.json();
+
+        if (tokenData.error) {
+          throw new Error(tokenData);
+        }
+
+        if (tokenData.access_token) {
           alert("Authenticated!");
 
-          localStorage.setItem("auth_token", data.token);
+          // Set token in localStorage
+          localStorage.setItem("token", tokenData.access_token);
+          localStorage.setItem("id_token", tokenData.id_token);
+
+          // Set a non-HTTP-only cookie on the client side
+          const maxAge = tokenData.expires_in; // Time in seconds until expiration
+          document.cookie = `token=${tokenData.access_token}; path=/; secure; samesite=strict; max-age=${maxAge}`;
+          document.cookie = `id_token=${tokenData.id_token}; path=/; secure; samesite=strict; max-age=${maxAge}`;
 
           router.push("/");
 
@@ -48,12 +69,12 @@ function AuthPage() {
           // localStorage.removeItem("pkce_code_verifier");
         }
       } catch (error) {
-        console.error(error);
+        throw new Error("Error authenticating");
       }
     };
 
     sendCodeToServer();
-  }, [router, code]);
+  }, [router, code, state]);
 
   return null;
 }

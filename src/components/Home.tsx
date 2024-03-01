@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useAccount } from "@/hooks/useAccount";
 import { useConversations } from "@/hooks/useConversations";
-import { Conversation } from "@/types";
 import { useConversation } from "@/hooks/useConversation";
 
 export default function Home() {
@@ -57,27 +56,35 @@ function StartConversationButton({
   characterId,
   mutate,
 }: {
-  characterId: string;
+  characterId: string | null;
   mutate: () => void;
 }) {
   if (!characterId) return null;
 
+  // Kickoff conversation
   const kickoffConversation = async () => {
-    const response = await fetch("/api/kickoffConversation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        characterId: characterId,
-      }),
-    });
+    const accessToken = localStorage.getItem("token");
+    console.log(accessToken);
+    const vanaResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/conversations`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          characterId: characterId,
+        }),
+      }
+    );
 
-    if (!response.ok) {
-      throw new Error("Failed to kickoff conversation");
+    console.log(vanaResponse);
+    if (vanaResponse.status !== 200) {
+      throw new Error("Failed to send message");
     }
-    const res = await response.json();
 
-    if (res.id) {
-      console.log("Conversation:", res); // Process accounts data
+    if (vanaResponse) {
       mutate();
     }
   };
@@ -101,24 +108,27 @@ function ConversationUI({ conversationId }: { conversationId: string }) {
   // Basic architecture for sending a message to the bot
   const sendMessage = async (conversationId: string, message: string) => {
     setIsGenerating(true);
-    const response = await fetch("/api/sendMessage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        conversationId: conversationId,
-        data: message,
-      }),
-    });
+    const accessToken = localStorage.getItem("token");
+    const vanaResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/conversations/${conversationId}/chat`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data: message,
+        }),
+      }
+    );
 
-    console.log(response);
-    if (!response.ok) {
-      setIsGenerating(false);
+    console.log(vanaResponse);
+    if (vanaResponse.status !== 200) {
       throw new Error("Failed to send message");
     }
-    const res = await response.json();
-    console.log(res);
 
-    if (res.success) {
+    if (vanaResponse) {
       mutate();
       setPrompt("");
     }

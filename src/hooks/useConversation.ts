@@ -10,7 +10,6 @@ const fetcher = async (url: string) => {
 };
 
 export function useConversation(conversationId: string) {
-  // Add conversationId to the URL
   const { data, error, mutate } = useSWR<{
     success: boolean;
     conversation: Conversation;

@@ -23,9 +23,6 @@ export default async function handler(
     const decodedToken = parseJwt(idToken);
     const accountId = decodedToken.sub;
 
-    console.log(accountId);
-    console.log(accessToken);
-
     const vanaResponse = await fetch(
       `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/conversations/${conversationId}`,
       {
