@@ -1,6 +1,10 @@
 import { parseJwt } from "@/utils/parseJwt";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req, res) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method not allowed" });
   }
@@ -16,9 +20,6 @@ export default async function handler(req, res) {
     // Assuming idToken is the JWT ID token you received
     const decodedToken = parseJwt(idToken);
     const accountId = decodedToken.sub;
-
-    console.log(accountId);
-    console.log(accessToken);
 
     const vanaResponse = await fetch(
       `${process.env.NEXT_PUBLIC_VANA_API_URL}/api/v0/conversations/`,

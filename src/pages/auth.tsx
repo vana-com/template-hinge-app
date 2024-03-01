@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
-import { codeVerifier } from "@/utils/codes";
 
 export default function auth() {
   return <AuthPage />;
@@ -22,27 +21,67 @@ function AuthPage() {
     const sendCodeToServer = async () => {
       if (!code) return;
 
+      if (localStorage.getItem("pkce_state") !== state) {
+        throw new Error("Invalid state");
+      }
+
       try {
-        const response = await fetch("/api/auth", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code: Array.isArray(code) ? code[0] : code,
-            codeVerifier,
-          }),
+        // Exchange the authorization code for an access token
+        const tokenRequestBody = new URLSearchParams({
+          grant_type: "authorization_code",
+          client_id: process.env.NEXT_PUBLIC_CLIENT_ID,
+          redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/auth`,
+          code_verifier: localStorage.getItem("pkce_code_verifier"),
+          code,
         });
-        const data = await response.json();
-        console.log(data); // Handle response
-        if (data.success === true) {
-          router.push("/?auth=success");
+
+        const tokenResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_VANA_OAUTH_URL}/oauth2/token`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: tokenRequestBody.toString(),
+          }
+        );
+
+        const tokenData = await tokenResponse.json();
+
+        if (tokenData.error) {
+          throw new Error(tokenData);
+        }
+
+        if (tokenData.access_token) {
+          alert("Authenticated!");
+
+          console.log(tokenData);
+
+          // Set token in localStorage
+          localStorage.setItem("token", tokenData.access_token);
+          localStorage.setItem("id_token", tokenData.id_token);
+
+          // Calculate expiration for the token and set it in the cookie
+          const maxAge = tokenData.expires_in; // Time in seconds until expiration
+          const now = new Date();
+          const expirationDate = new Date(now.getTime() + +maxAge);
+
+          localStorage.setItem(
+            "token_expiration",
+            expirationDate.toISOString()
+          );
+
+          // Set a non-HTTP-only cookie on the client side
+          document.cookie = `token=${tokenData.access_token}; path=/; secure; samesite=strict; max-age=${maxAge}`;
+          document.cookie = `id_token=${tokenData.id_token}; path=/; secure; samesite=strict; max-age=${maxAge}`;
+
+          router.push("/");
         }
       } catch (error) {
-        console.error(error);
+        throw new Error("Error authenticating");
       }
     };
 
     sendCodeToServer();
-  }, [code, codeVerifier]);
+  }, [router, code, state]);
 
   return null;
 }

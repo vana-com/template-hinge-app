@@ -21,12 +21,23 @@ export interface Speaker {
   participantType: string;
 }
 
+export interface Message {
+  id: string;
+  content: string;
+  created: number;
+  mediaUrl: string | null;
+  mediaMimetype: string | null;
+  speakerId: string;
+  participantId: string;
+  participantType: string;
+}
+
 export interface Conversation {
   id: string;
   speakers: Speaker[];
   created: string;
   updated: string;
-  //   messages: Message[];
+  messages: Message[];
 }
 
 export interface PromptAndResponse {
